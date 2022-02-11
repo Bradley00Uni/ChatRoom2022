@@ -45,6 +45,5 @@ namespace BlazorChatRoom.Hubs
         {
             await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("UpdateGroup");
         }
-
     }
 }

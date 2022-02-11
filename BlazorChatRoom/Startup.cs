@@ -45,7 +45,7 @@ namespace BlazorChatRoom
             services.AddHttpContextAccessor();
 
             services.AddSingleton<RoomHubModel>();
-            services.AddSingleton<CurrentUser>();
+            services.AddScoped<CurrentUser>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

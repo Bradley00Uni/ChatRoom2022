@@ -3,9 +3,8 @@
 @using System.Threading;
 @using BlazorChatRoom.Hubs;
 @using BlazorChatRoom.Models;
-@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.WebUtilities
-@inject IHttpContextAccessor _context;
+@inject CurrentUser _currentUser
 
 @inject NavigationManager _nav;
 @inject RoomHubModel _rooms;
@@ -32,8 +31,7 @@
             {
                 room = _rooms.ChatRooms[_room];
 
-                user.Username = _context.HttpContext.User.Identity.Name;
-                user.UserId = Guid.NewGuid();
+                user = _currentUser.User;
 
                 if (user.Username == null)
                 {
@@ -52,6 +50,7 @@
             .WithUrl(_nav.BaseUri.TrimEnd('/') + ChatHub.HubPath)
             .Build();
             _hub.On("UpdateGroup", UpdateGroup);
+            room.OnlineUsers.Add(user);
 
             await _hub.StartAsync();
             await _hub.InvokeAsync("AddToGroup", room.Id);
@@ -101,6 +100,7 @@
     private async void Leave()
     {
         await _hub.InvokeAsync("RemoveFromGroup", room.Id);
+        room.OnlineUsers.Remove(user);
         _nav.NavigateTo("/");
     }
 
