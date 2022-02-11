@@ -35,6 +35,12 @@ namespace BlazorChatRoom.Hubs
             Console.WriteLine($"{Context.ConnectionId} added to group {groupName}");
         }
 
+        public async Task RemoveFromGroup(string groupName)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            Console.WriteLine($"{Context.ConnectionId} removed from group {groupName}");
+        }
+
         public async void UpdateGroup (string groupName)
         {
             await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("UpdateGroup");

@@ -97,6 +97,11 @@
         }
     }
 
+    private async void Leave()
+    {
+        await _hub.InvokeAsync("RemoveFromGroup", room.Id);
+        _nav.NavigateTo("/");
+    }
 }
 
 @if (isActive)
@@ -105,15 +110,15 @@
     <div class="card border-primary my-3 bg-secondary">
         <div class="card-header">
             <div class="row">
-                <div class="col-2">
-                    <div class="text-center">
-                        <img src="https://picsum.photos/id/237/75/75" class="rounded-circle border border-4 border-light" alt="Profile Picture" />
-                    </div>
-                </div>
-                <div class="col">
-                    <span class="text text-lg text-light">@user.Username @user.UserId.ToString()</span>
+                <div class="col-10">
+                    <span class="text text-lg text-light">Welcome to the chat room: @user.Username</span>
                     <br />
                 </div>
+
+                <div class="col-2 justify-content-end d-grid gap-2">
+                    <a class="btn btn-danger" @onclick="() => Leave()">Leave</a>
+                </div>
+
             </div>
 
         </div>
