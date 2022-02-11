@@ -1,0 +1,166 @@
+﻿@using BlazorChatRoom.Data
+@using Microsoft.AspNetCore.SignalR.Client;
+@using System.Threading;
+@using BlazorChatRoom.Hubs;
+@using BlazorChatRoom.Models;
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.WebUtilities
+@inject IHttpContextAccessor _context;
+
+@inject NavigationManager _nav;
+@inject RoomHubModel _rooms;
+
+@page "/Chat"
+
+@code {
+
+    private string newMessage;
+    private HubConnection _hub;
+    private bool isActive = false;
+    private UserModel user = new UserModel();
+    private RoomModel room;
+
+    protected async override void OnInitialized()
+    {
+        var uri = _nav.ToAbsoluteUri(_nav.Uri);
+
+        if(QueryHelpers.ParseQuery(uri.Query).TryGetValue("id", out var param))
+        {
+            Guid _room = new Guid(param.First());
+
+            if (_rooms.ChatRooms.ContainsKey(_room))
+            {
+                room = _rooms.ChatRooms[_room];
+
+                user.Username = _context.HttpContext.User.Identity.Name;
+                user.UserId = Guid.NewGuid();
+
+                if (user.Username == null)
+                {
+                    _nav.NavigateTo("/");
+                }
+            }
+        }
+        else
+        {
+            _nav.NavigateTo("Index");
+        }
+
+        try
+        {
+            _hub = new HubConnectionBuilder()
+            .WithUrl(_nav.BaseUri.TrimEnd('/') + ChatHub.HubPath)
+            .Build();
+            _hub.On("UpdateGroup", UpdateGroup);
+
+            await _hub.StartAsync();
+            await _hub.InvokeAsync("AddToGroup", room.Id);
+            isActive = true;
+            StateHasChanged();
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    List<MessageModel> Messages = new List<MessageModel>();
+
+    private async Task addMessage(string message)
+    {
+        MessageModel newMessage = new MessageModel { MessageBody = message };
+
+        newMessage.Sender = user.Username;
+        newMessage.TimeStamp = DateTime.Now;
+
+        if (_hub != null || isActive == false)
+        {
+            room.Messages.Add(newMessage);
+            await _hub.InvokeAsync("UpdateGroup", room.Id);
+            StateHasChanged();
+        }
+        //Error
+
+
+    }
+
+    private void UpdateGroup()
+    {
+        if (_rooms.ChatRooms.ContainsKey(room.Id))
+        {
+            StateHasChanged();
+        }
+        else
+        {
+            _nav.NavigateTo("/");
+        }
+    }
+
+}
+
+@if (isActive)
+{
+
+    <div class="card border-primary my-3 bg-secondary">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-2">
+                    <div class="text-center">
+                        <img src="https://picsum.photos/id/237/75/75" class="rounded-circle border border-4 border-light" alt="Profile Picture" />
+                    </div>
+                </div>
+                <div class="col">
+                    <span class="text text-lg text-light">@user.Username @user.UserId.ToString()</span>
+                    <br />
+                </div>
+            </div>
+
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col h-25">
+                    <div class="container-fluid">
+                        @foreach (MessageModel item in room.Messages)
+                        {
+                            @if (user.Username == item.Sender)
+                            {
+                             <div class="row justify-content-end">
+                                <div class="col-4 m-4 p-4 bg-info rounded-pill">
+                                    <span class="text-dark">@item.Sender says: </span>
+                                    <span class="text-light">@item.MessageBody</span>
+                                    <br />
+                                    <span class="text-light small">@item.TimeStamp.ToString("dd/MM/yyyy hh:mm:ss")</span>
+                                </div>
+                             </div>
+                            }
+                            else
+                            {
+                             <div class="row">
+                                <div class="col-4 m-4 p-4 bg-success rounded-pill">
+                                    <span class="text-dark">@item.Sender says: </span>
+                                    <span class="text-light">@item.MessageBody</span>
+                                    <br />
+                                    <span class="text-light small">@item.TimeStamp.ToString("dd/MM/yyyy hh:mm:ss")</span>
+                                </div>
+                             </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row p-2">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Enter your message here..." @bind="newMessage" aria-label="Enter your message here..." aria-describedby="button" />
+                        <button class="btn btn-success" type="button" id="txtMessage" @onclick="() => addMessage(newMessage)">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+

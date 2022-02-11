@@ -1,0 +1,30 @@
+﻿@using BlazorChatRoom.Models;
+@inject CurrentUser currentUser;
+@inject RoomHubModel allRooms;
+@inject NavigationManager _nav;
+
+<div class="container">
+    <div class="input-group flex-nowrap">
+        <span class="input-group-text" id="addon-wrapping">></span>
+        <input type="text" class="form-control" placeholder="Enter a Room Name" aria-label="Room" aria-describedby="addon-wrapping" @bind="name">
+        <button class="btn btn-outline-secondary" type="button" id="btnCreateRoom" @onclick="Create">Create Room</button>
+    </div>
+</div>
+
+@code {
+
+    string name = String.Empty;
+
+    private void Create()
+    {
+        RoomModel NewRoom = new RoomModel();
+        NewRoom.Id = Guid.NewGuid();
+        NewRoom.CreatedBy = currentUser.User;
+        NewRoom.Name = name;
+
+        //Add to Room Hub
+        allRooms.ChatRooms.Add(NewRoom.Id, NewRoom);
+        _nav.NavigateTo("/", forceLoad: true);
+
+    } 
+}

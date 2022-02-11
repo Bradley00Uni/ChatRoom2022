@@ -1,0 +1,21 @@
+﻿@using BlazorChatRoom.Models;
+@inject RoomHubModel rooms;
+
+<h3>Open Rooms</h3>
+
+<div class="row">
+    @foreach (RoomModel r in rooms.ChatRooms.Values)
+    {
+        <div class="col-3">
+            <div class="card border-primary mb-3">
+                <div class="card-header">@r.Name</div>
+                <div class="card-body">
+                    <h4 class="card-title">There are <b>@r.OnlineUsers.Count</b> users online</h4>
+                    <p class="card-title">Room Created By: @r.CreatedBy.Username</p>
+                </div>
+                <a class="btn btn-primary m-2" href="/Chat?id=@r.Id">Join Room</a>
+            </div>
+        </div>
+
+    }
+</div>
