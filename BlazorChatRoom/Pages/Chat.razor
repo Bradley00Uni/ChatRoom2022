@@ -111,6 +111,13 @@
             await addMessage(newMessage);
         }
     } 
+
+    private async void Close()
+    {
+         _rooms.ChatRooms.Remove(room.Id);       
+        await _hub.StopAsync();
+        _nav.NavigateTo("/");
+    }
 }
 
 @if (isActive)
@@ -119,11 +126,16 @@
     <div class="card border-primary my-3 bg-secondary">
         <div class="card-header">
             <div class="row">
-                <div class="col-10">
-                    <span class="text text-lg text-light">Welcome to the chat room: @user.Username</span>
+                @if (room.CreatedBy.Username == user.Username)
+                {
+                    <div class="col-2 justify-content-start  d-grid gap-2">
+                        <button class="btn btn-warning" @onclick="Close">Destroy Chatroom</button>
+                    </div>
+                }
+                <div class="col-8">
+                    <span class="text text-lg text-light justify-content-center">Welcome to the chat room: @user.Username</span>
                     <br />
                 </div>
-
                 <div class="col-2 justify-content-end d-grid gap-2">
                     <a class="btn btn-danger" @onclick="() => Leave()">Leave</a>
                 </div>

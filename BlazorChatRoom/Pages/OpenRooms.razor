@@ -1,5 +1,6 @@
 ﻿@using BlazorChatRoom.Models;
 @inject RoomHubModel rooms;
+@inject CurrentUser _current;
 
 <h3>Open Rooms</h3>
 
@@ -8,10 +9,17 @@
     {
         <div class="col-3">
             <div class="card border-primary mb-3">
-                <div class="card-header">@r.Name</div>
+                @if (r.CreatedBy.Username == _current.User.Username)
+                {
+                    <div class="card-header bg-success">@r.Name</div>
+                }
+                else
+                {
+                    <div class="card-header bg-warning">@r.Name</div>
+                }               
                 <div class="card-body">
                     <h4 class="card-title">There are <b>@r.OnlineUsers.Count</b> users online</h4>
-                    <p class="card-title">Room Created By: @r.CreatedBy.Username</p>
+                    <p class="card-title">Room Created By: <i>@r.CreatedBy.Username</i></p>
                 </div>
                 <a class="btn btn-primary m-2" href="/Chat?id=@r.Id">Join Room</a>
             </div>
