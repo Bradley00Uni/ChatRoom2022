@@ -6,7 +6,7 @@
 <div class="container">
     <div class="input-group flex-nowrap">
         <span class="input-group-text" id="addon-wrapping">></span>
-        <input type="text" class="form-control" placeholder="Enter a Room Name" aria-label="Room" aria-describedby="addon-wrapping" @bind="name">
+        <input type="text" class="form-control" @onkeypress="@KeySendHandler" placeholder="Enter a Room Name" aria-label="Room" aria-describedby="addon-wrapping" @bind-value="name" @bind-value:event="oninput">
         <button class="btn btn-outline-secondary" type="button" id="btnCreateRoom" @onclick="Create">Create Room</button>
     </div>
 </div>
@@ -26,5 +26,13 @@
         allRooms.ChatRooms.Add(NewRoom.Id, NewRoom);
         _nav.NavigateTo("/", forceLoad: true);
 
+    }
+    
+    private void KeySendHandler(KeyboardEventArgs e)
+    {
+        if(e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            Create();
+        }
     } 
 }

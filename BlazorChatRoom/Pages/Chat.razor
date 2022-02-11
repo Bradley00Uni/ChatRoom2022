@@ -69,15 +69,16 @@
 
     private async Task addMessage(string message)
     {
-        MessageModel newMessage = new MessageModel { MessageBody = message };
+        MessageModel newerMessage = new MessageModel { MessageBody = message };
 
-        newMessage.Sender = user.Username;
-        newMessage.TimeStamp = DateTime.Now;
+        newerMessage.Sender = user.Username;
+        newerMessage.TimeStamp = DateTime.Now;
 
         if (_hub != null || isActive == false)
         {
-            room.Messages.Add(newMessage);
+            room.Messages.Add(newerMessage);
             await _hub.InvokeAsync("UpdateGroup", room.Id);
+            newMessage = String.Empty;
             StateHasChanged();
         }
         //Error
@@ -102,6 +103,14 @@
         await _hub.InvokeAsync("RemoveFromGroup", room.Id);
         _nav.NavigateTo("/");
     }
+
+    private async void KeySendHandler(KeyboardEventArgs e)
+    {
+        if(e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await addMessage(newMessage);
+        }
+    } 
 }
 
 @if (isActive)
@@ -157,7 +166,7 @@
             <div class="row p-2">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Enter your message here..." @bind="newMessage" aria-label="Enter your message here..." aria-describedby="button" />
+                        <input type="text" class="form-control" @onkeypress="@KeySendHandler" placeholder="Enter your message here..." @bind-value="newMessage" @bind-value:event="oninput" aria-label="Enter your message here..." aria-describedby="button" />
                         <button class="btn btn-success" type="button" id="txtMessage" @onclick="() => addMessage(newMessage)">Send</button>
                     </div>
                 </div>
